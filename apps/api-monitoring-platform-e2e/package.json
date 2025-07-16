@@ -1,0 +1,26 @@
+{
+  "name": "@api-monitoring-platform/api-monitoring-platform-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@api-monitoring-platform/api-monitoring-platform"
+    ],
+    "targets": {
+      "e2e": {
+        "executor": "@nx/jest:jest",
+        "outputs": [
+          "{projectRoot}/test-output/jest/coverage"
+        ],
+        "options": {
+          "jestConfig": "apps/api-monitoring-platform-e2e/jest.config.ts",
+          "passWithNoTests": true
+        },
+        "dependsOn": [
+          "@api-monitoring-platform/api-monitoring-platform:build",
+          "@api-monitoring-platform/api-monitoring-platform:serve"
+        ]
+      }
+    }
+  }
+}

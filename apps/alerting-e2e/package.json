@@ -1,0 +1,26 @@
+{
+  "name": "@api-monitoring-platform/alerting-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@api-monitoring-platform/alerting"
+    ],
+    "targets": {
+      "e2e": {
+        "executor": "@nx/jest:jest",
+        "outputs": [
+          "{projectRoot}/test-output/jest/coverage"
+        ],
+        "options": {
+          "jestConfig": "alerting-e2e/jest.config.ts",
+          "passWithNoTests": true
+        },
+        "dependsOn": [
+          "@api-monitoring-platform/alerting:build",
+          "@api-monitoring-platform/alerting:serve"
+        ]
+      }
+    }
+  }
+}

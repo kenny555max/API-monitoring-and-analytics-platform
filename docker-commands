@@ -1,0 +1,35 @@
+# Development (with hot reloading)
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+# Production
+docker-compose up
+
+# Build all services
+docker-compose build
+
+# Start specific services
+docker-compose up nats postgres redis
+
+# Start with tools (pgadmin, nats-box)
+docker-compose --profile tools up
+
+# View logs
+docker-compose logs -f users
+docker-compose logs -f gateway
+
+# Scale services
+docker-compose up --scale analytics-processing=3
+
+# Rebuild and restart
+docker-compose up --build
+
+# Stop everything
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+
+# Clean and rebuild Docker
+docker-compose down
+docker system prune -f
+docker-compose build --no-cache

@@ -1,0 +1,58 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/api-monitoring-platform-e2e"
+    },
+    {
+      "path": "./apps/api-monitoring-platform"
+    },
+    {
+      "path": "./apps/users-e2e"
+    },
+    {
+      "path": "./apps/users"
+    },
+    {
+      "path": "./apps/payments-e2e"
+    },
+    {
+      "path": "./apps/payments"
+    },
+    {
+      "path": "./apps/data-collection-e2e"
+    },
+    {
+      "path": "./apps/data-collection"
+    },
+    {
+      "path": "./apps/analytics-processing-e2e"
+    },
+    {
+      "path": "./apps/analytics-processing"
+    },
+    {
+      "path": "./apps/alerting-e2e"
+    },
+    {
+      "path": "./apps/alerting"
+    },
+    {
+      "path": "./apps/gateway-e2e"
+    },
+    {
+      "path": "./apps/gateway"
+    },
+    {
+      "path": "./libs/shared"
+    },
+    {
+      "path": "./libs/nats-client"
+    },
+    {
+      "path": "./libs/common-models"
+    }
+  ]
+}

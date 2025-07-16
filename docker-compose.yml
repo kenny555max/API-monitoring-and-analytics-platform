@@ -1,0 +1,149 @@
+services:
+  api_gateway:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+#       need this volume for auto-reload to work.
+#      the docker build pointing to the dockerfile workfile setup in this project
+      - ./http-api-gateway/src:/usr/src/app/src
+      - ./apps/gateway:/app/apps/gateway
+      - ./libs:/app/libs
+      - /app/node_modules
+    command: npm run start:dev
+    environment:
+      - PORT=3000
+    depends_on:
+      - nats
+      - users
+      - payments
+      #- data-collection
+      #- analytics-processing
+      #- alerting
+    networks:
+      - api-monitoring-network
+  users:
+#    we are not exposing any port here bcus its a microservice
+    build:
+      context: .
+      dockerfile: apps/users/Dockerfile
+    volumes:
+      #       need this volume for auto-reload to work
+      #      the docker build pointing to the dockerfile workfile setup in this project
+      - ./apps/users:/app/apps/users
+      - ./libs:/app/libs
+      - /app/node_modules
+    networks:
+      - api-monitoring-network
+    command: npm run start:dev
+    environment:
+      - NODE_ENV=development
+      - NATS_URL=nats://nats:4222
+      #- DATABASE_URL=postgresql://postgres:postgres@postgres:5432/api_monitoring
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      mysql_db:
+        condition: service_healthy
+  payments:
+    #    we are not exposing any port here bcus its a microservice
+    build:
+      context: .
+      dockerfile: apps/payments/Dockerfile
+    volumes:
+      #       need this volume for auto-reload to work
+      #      the docker build pointing to the dockerfile workfile setup in this project
+      - ./apps/payments/src:/usr/src/app/src
+      - ./libs:/app/libs
+      - /app/node_modules
+    networks:
+      - api-monitoring-network
+    command: npm run start:dev
+    environment:
+      - NODE_ENV=development
+      - NATS_URL=nats://nats:4222
+      #- DATABASE_URL=postgresql://postgres:postgres@postgres:5432/api_monitoring
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      mysql_db:
+        condition: service_healthy
+  data-collection:
+    build:
+      context: .
+      dockerfile: apps/data-collection/Dockerfile
+    ports:
+      - "3003:3000"
+    environment:
+      - NODE_ENV=development
+      - NATS_URL=nats://nats:4222
+      #- DATABASE_URL=postgresql://postgres:postgres@postgres:5432/api_monitoring
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - nats
+      - mysql_db
+      - redis
+    volumes:
+      - ./apps/data-collection:/app/apps/data-collection
+      - ./libs:/app/libs
+      - /app/node_modules
+    networks:
+      - api-monitoring-network
+  nats:
+    image: nats # nats:2.10-alpine docker would pull the nats image
+    ports:
+      - "4222:4222"
+      - "6222:6222"
+      - "8222:8222"
+    command:
+      - "--cluster_name=api-monitoring-cluster"
+      - "--http_port=8222"
+      - "--js"
+    volumes:
+      - nats_data:/data
+    networks:
+      - api-monitoring-network
+  mysql_db:
+    image: mysql
+    ports:
+      - "3307:3306"  # Host port 3307 -> Container port 3306 (MySQL default)
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=nestjs_db
+      - MYSQL_USER=kenny_db
+      - MYSQL_PASSWORD=kenny
+      #- MYSQL_TCP_PORT=3307
+        # Remove MYSQL_TCP_PORT since we're using default port inside container
+        # Remove the custom command since we're using default port
+    volumes:
+      - mysql_data:/var/lib/mysql/data
+      - ./infrastructure/docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - api-monitoring-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - api-monitoring-network
+networks:
+  api-monitoring-network:
+    driver: bridge
+volumes:
+  nats_data:
+  mysql_data:
+  redis_data:
